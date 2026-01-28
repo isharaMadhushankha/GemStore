@@ -53,6 +53,7 @@ class _HomePageState extends State<HomePage> {
       ) ,
 
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         selectedItemColor: const Color.fromARGB(255, 244, 54, 133),
         unselectedLabelStyle: TextStyle(
           color: Colors.black
@@ -60,7 +61,7 @@ class _HomePageState extends State<HomePage> {
         unselectedItemColor: Colors.black,
         
         items: [
-        BottomNavigationBarItem(icon: Icon(Icons.add),label: "Add",),
+        BottomNavigationBarItem(icon: Icon(Icons.add) ,label: "Add" ,),
         BottomNavigationBarItem(icon: Icon(Icons.home),label: "home"),
         BottomNavigationBarItem(icon: Icon(Icons.search),label: "serch"),
         BottomNavigationBarItem(icon: Icon(Icons.person),label: "Profile"),
