@@ -51,6 +51,20 @@ class _HomePageState extends State<HomePage> {
         centerTitle: true,
         backgroundColor: Colors.black,
       ) ,
+
+      bottomNavigationBar: BottomNavigationBar(
+        selectedItemColor: const Color.fromARGB(255, 244, 54, 133),
+        unselectedLabelStyle: TextStyle(
+          color: Colors.black
+        ),
+        unselectedItemColor: Colors.black,
+        
+        items: [
+        BottomNavigationBarItem(icon: Icon(Icons.add),label: "Add",),
+        BottomNavigationBarItem(icon: Icon(Icons.home),label: "home"),
+        BottomNavigationBarItem(icon: Icon(Icons.search),label: "serch"),
+        BottomNavigationBarItem(icon: Icon(Icons.person),label: "Profile"),
+      ]),
     );
   }
 }
