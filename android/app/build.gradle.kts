@@ -18,9 +18,9 @@ val flutterVersionCode = localProperties.getProperty("flutter.versionCode")?.toI
 val flutterVersionName = localProperties.getProperty("flutter.versionName") ?: "1.0"
 
 android {
-    namespace = "com.example.gemstore_app"
-    compileSdk = 34
-    ndkVersion = "25.1.8937393"
+    namespace = "com.example.gemstore"
+    compileSdk = 36
+    ndkVersion = "28.2.13676358"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
@@ -40,9 +40,9 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.gemstore_app"
+        applicationId = "com.example.gemstore"
         minSdk = flutter.minSdkVersion
-        targetSdk = 34
+        targetSdk = 36
         versionCode = flutterVersionCode
         versionName = flutterVersionName
         multiDexEnabled = true
