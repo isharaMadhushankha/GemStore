@@ -100,6 +100,56 @@ class GemProvider with ChangeNotifier {
       rethrow;
     }
   }
+
+  Future<bool> createGem({
+    required String title,
+    String? description,
+    required double price,
+    String? color,
+    double? weight,
+    String? model,
+    String? location,
+    String? contactName,
+    String? contactPhone,
+    String? contactEmail,
+    required List<String> imageUrls,
+  }) async {
+    final userId = _supabase.auth.currentUser?.id;
+    if (userId == null) return false;
+
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      await _supabase.from(SupabaseConfig.gemsTable).insert({
+        'user_id': userId,
+        'title': title,
+        'description': description,
+        'price': price,
+        'color': color,
+        'weight': weight,
+        'model': model,
+        'location': location,
+        'contact_name': contactName,
+        'contact_phone': contactPhone,
+        'contact_email': contactEmail,
+        'images': imageUrls,
+        'status': 'available',
+      });
+
+      await fetchMyGems();
+      await fetchGems();
+      
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
   
 
 }
