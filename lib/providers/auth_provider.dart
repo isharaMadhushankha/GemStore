@@ -89,4 +89,38 @@ class AuthProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<bool> updateProfile({
+    String? fullName,
+    String? phone,
+    String? location,
+  }) async {
+    if (_currentUser == null) return false;
+
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      await _supabase.from('users').update({
+        if (fullName != null) 'full_name': fullName,
+        if (phone != null) 'phone': phone,
+        if (location != null) 'location': location,
+      }).eq('id', _currentUser!.id);
+
+      await _loadUserProfile(_currentUser!.id);
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  void clearError() {
+    _errorMessage = null;
+    notifyListeners();
+  }
 }
