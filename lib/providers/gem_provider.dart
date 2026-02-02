@@ -52,6 +52,30 @@ class GemProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<void> fetchMyGems() async {
+    final userId = _supabase.auth.currentUser?.id;
+    if (userId == null) return;
+
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final response = await _supabase
+          .from(SupabaseConfig.gemsTable)
+          .select()
+          .eq('user_id', userId)
+          .order('created_at', ascending: false);
+
+      _myGems = (response as List).map((json) => Gem.fromJson(json)).toList();
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
   
 
 }
