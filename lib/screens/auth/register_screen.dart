@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../config/theme.dart';
 import '../../providers/auth_provider.dart';
+import '../../widgets/message_widgets.dart';
 import '../home_screen.dart';
 import 'login_screen.dart';
 
@@ -20,6 +22,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _phoneController = TextEditingController();
   final _locationController = TextEditingController();
   bool _obscurePassword = true;
+  Timer? _countdownTimer;
+  int _remainingSeconds = 0;
 
   @override
   void dispose() {
@@ -28,6 +32,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _passwordController.dispose();
     _phoneController.dispose();
     _locationController.dispose();
+    _countdownTimer?.cancel();
     super.dispose();
   }
 
@@ -35,6 +40,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    
+    // Check if we need to wait due to rate limiting
+    if (!authProvider.canRetrySignUp()) {
+      final waitTime = authProvider.getRemainingWaitTime();
+      if (waitTime > 0) {
+        _startCountdown(waitTime);
+        _showRateLimitDialog(waitTime);
+        return;
+      }
+    }
     
     final success = await authProvider.signUp(
       email: _emailController.text.trim(),
@@ -54,13 +69,62 @@ class _RegisterScreenState extends State<RegisterScreen> {
         (route) => false,
       );
     } else if (mounted) {
+      final errorMessage = authProvider.errorMessage ?? 'Registration failed';
+      
+      // If it's a rate limit error, start countdown
+      if (authProvider.rateLimitSeconds > 0) {
+        _startCountdown(authProvider.rateLimitSeconds);
+      }
+      
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(authProvider.errorMessage ?? 'Registration failed'),
+          content: Text(errorMessage),
           backgroundColor: AppTheme.errorColor,
+          duration: authProvider.rateLimitSeconds > 0 
+              ? Duration(seconds: authProvider.rateLimitSeconds)
+              : const Duration(seconds: 4),
         ),
       );
     }
+  }
+
+  void _startCountdown(int seconds) {
+    _countdownTimer?.cancel();
+    setState(() {
+      _remainingSeconds = seconds;
+    });
+    
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_remainingSeconds <= 1) {
+        timer.cancel();
+        setState(() {
+          _remainingSeconds = 0;
+        });
+      } else {
+        setState(() {
+          _remainingSeconds--;
+        });
+      }
+    });
+  }
+
+  void _showRateLimitDialog(int waitTime) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('Please Wait'),
+        content: Text(
+          'You can try again in $waitTime seconds. This security measure helps protect our services.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -91,6 +155,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 32),
+                Consumer<AuthProvider>(
+                  builder: (context, authProvider, child) {
+                    if (authProvider.errorMessage != null) {
+                      return ErrorMessageWidget(
+                        message: authProvider.errorMessage!,
+                        showRetryButton: authProvider.rateLimitSeconds == 0 && !authProvider.isLoading,
+                        onRetry: () {
+                          authProvider.clearError();
+                          _handleRegister();
+                        },
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
                 TextFormField(
                   controller: _nameController,
                   decoration: const InputDecoration(
@@ -177,12 +256,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 24),
                 Consumer<AuthProvider>(
                   builder: (context, authProvider, child) {
+                    final isDisabled = authProvider.isLoading || _remainingSeconds > 0;
+                    
                     return SizedBox(
                       height: 50,
                       child: ElevatedButton(
-                        onPressed: authProvider.isLoading ? null : _handleRegister,
+                        onPressed: isDisabled ? null : _handleRegister,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryColor,
+                          backgroundColor: isDisabled 
+                              ? Colors.grey.shade400
+                              : AppTheme.primaryColor,
                           foregroundColor: Colors.white,
                         ),
                         child: authProvider.isLoading
@@ -195,9 +278,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       AlwaysStoppedAnimation<Color>(Colors.white),
                                 ),
                               )
-                            : const Text(
-                                'Create Account',
-                                style: TextStyle(fontSize: 16),
+                            : Text(
+                                _remainingSeconds > 0
+                                    ? 'Wait ${_remainingSeconds}s'
+                                    : 'Create Account',
+                                style: const TextStyle(fontSize: 16),
                               ),
                       ),
                     );

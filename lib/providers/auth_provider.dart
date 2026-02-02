@@ -7,11 +7,14 @@ class AuthProvider with ChangeNotifier {
   AppUser? _currentUser;
   bool _isLoading = false;
   String? _errorMessage;
+  DateTime? _lastSignUpAttempt;
+  int _rateLimitSeconds = 0;
 
   AppUser? get currentUser => _currentUser;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   bool get isAuthenticated => _currentUser != null;
+  int get rateLimitSeconds => _rateLimitSeconds;
 
   AuthProvider() {
     _initAuth();
@@ -58,6 +61,7 @@ class AuthProvider with ChangeNotifier {
   }) async {
     _isLoading = true;
     _errorMessage = null;
+    _rateLimitSeconds = 0;
     notifyListeners();
 
     try {
@@ -76,6 +80,7 @@ class AuthProvider with ChangeNotifier {
         });
 
         await _loadUserProfile(response.user!.id);
+        _lastSignUpAttempt = DateTime.now();
         _isLoading = false;
         notifyListeners();
         return true;
@@ -85,7 +90,8 @@ class AuthProvider with ChangeNotifier {
       notifyListeners();
       return false;
     } catch (e) {
-      _errorMessage = e.toString();
+      _lastSignUpAttempt = DateTime.now();
+      _errorMessage = _parseAuthError(e.toString());
       _isLoading = false;
       notifyListeners();
       return false;
@@ -117,7 +123,7 @@ class AuthProvider with ChangeNotifier {
       notifyListeners();
       return false;
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorMessage = _parseAuthError(e.toString());
       _isLoading = false;
       notifyListeners();
       return false;
@@ -130,7 +136,7 @@ class AuthProvider with ChangeNotifier {
       _currentUser = null;
       notifyListeners();
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorMessage = _parseAuthError(e.toString());
       notifyListeners();
     }
   }
@@ -157,7 +163,7 @@ class AuthProvider with ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorMessage = _parseAuthError(e.toString());
       _isLoading = false;
       notifyListeners();
       return false;
@@ -166,6 +172,71 @@ class AuthProvider with ChangeNotifier {
 
   void clearError() {
     _errorMessage = null;
+    _rateLimitSeconds = 0;
     notifyListeners();
+  }
+
+  String _parseAuthError(String error) {
+    if (error.contains('over_email_send_rate_limit')) {
+      // Extract the wait time from the error message
+      final RegExp regExp = RegExp(r'after (\d+) seconds');
+      final match = regExp.firstMatch(error);
+      
+      if (match != null) {
+        _rateLimitSeconds = int.tryParse(match.group(1) ?? '0') ?? 60;
+        return 'Too many signup attempts. Please wait $_rateLimitSeconds seconds before trying again.';
+      }
+      
+      _rateLimitSeconds = 60; // Default fallback
+      return 'Too many signup attempts. Please wait a moment before trying again.';
+    }
+    
+    if (error.contains('AuthApiException')) {
+      // Clean up the error message for user display
+      final RegExp regExp = RegExp(r'message: ([^,]+)');
+      final match = regExp.firstMatch(error);
+      
+      if (match != null) {
+        return match.group(1)?.trim() ?? 'Authentication error occurred';
+      }
+    }
+    
+    if (error.contains('Invalid login credentials')) {
+      return 'Invalid email or password. Please check your credentials and try again.';
+    }
+    
+    if (error.contains('User already registered')) {
+      return 'An account with this email already exists. Please sign in instead.';
+    }
+    
+    if (error.contains('Password should be at least')) {
+      return 'Password should be at least 6 characters long.';
+    }
+    
+    if (error.contains('Invalid email')) {
+      return 'Please enter a valid email address.';
+    }
+    
+    // Generic fallback
+    return 'An error occurred. Please try again later.';
+  }
+
+  bool canRetrySignUp() {
+    if (_lastSignUpAttempt == null) return true;
+    
+    final now = DateTime.now();
+    final timeDifference = now.difference(_lastSignUpAttempt!);
+    
+    return timeDifference.inSeconds >= _rateLimitSeconds;
+  }
+
+  int getRemainingWaitTime() {
+    if (_lastSignUpAttempt == null) return 0;
+    
+    final now = DateTime.now();
+    final timeDifference = now.difference(_lastSignUpAttempt!);
+    final remainingSeconds = _rateLimitSeconds - timeDifference.inSeconds;
+    
+    return remainingSeconds > 0 ? remainingSeconds : 0;
   }
 }
