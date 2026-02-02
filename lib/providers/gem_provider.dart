@@ -6,7 +6,7 @@ import '../config/supabase_config.dart';
 
 class GemProvider with ChangeNotifier {
   final SupabaseClient _supabase = Supabase.instance.client;
-  
+
   List<Gem> _gems = [];
   List<Gem> _myGems = [];
   List<String> _favoriteGemIds = [];
@@ -26,22 +26,23 @@ class GemProvider with ChangeNotifier {
       var query = _supabase
           .from(SupabaseConfig.gemsTable)
           .select()
-          .eq('status', 'available')
-          .order('created_at', ascending: false);
+          .eq('status', 'available');
 
       if (searchQuery != null && searchQuery.isNotEmpty) {
-        query = query.or('title.ilike.%$searchQuery%,description.ilike.%$searchQuery%');
+        query = query.or(
+          'title.ilike.%$searchQuery%,description.ilike.%$searchQuery%',
+        );
       }
 
       if (colorFilter != null && colorFilter.isNotEmpty) {
         query = query.eq('color', colorFilter);
       }
 
-      final response = await query;
+      final response = await query.order('created_at', ascending: false);
       _gems = (response as List).map((json) => Gem.fromJson(json)).toList();
-      
+
       await _loadFavorites();
-      
+
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -80,7 +81,8 @@ class GemProvider with ChangeNotifier {
 
     try {
       for (var file in imageFiles) {
-        final fileName = '${DateTime.now().millisecondsSinceEpoch}_${file.path.split('/').last}';
+        final fileName =
+            '${DateTime.now().millisecondsSinceEpoch}_${file.path.split('/').last}';
         final filePath = '${_supabase.auth.currentUser!.id}/$fileName';
 
         await _supabase.storage
@@ -138,7 +140,7 @@ class GemProvider with ChangeNotifier {
 
       await fetchMyGems();
       await fetchGems();
-      
+
       _isLoading = false;
       notifyListeners();
       return true;
@@ -189,7 +191,7 @@ class GemProvider with ChangeNotifier {
 
       await fetchMyGems();
       await fetchGems();
-      
+
       _isLoading = false;
       notifyListeners();
       return true;
@@ -206,14 +208,11 @@ class GemProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      await _supabase
-          .from(SupabaseConfig.gemsTable)
-          .delete()
-          .eq('id', gemId);
+      await _supabase.from(SupabaseConfig.gemsTable).delete().eq('id', gemId);
 
       await fetchMyGems();
       await fetchGems();
-      
+
       _isLoading = false;
       notifyListeners();
       return true;
@@ -224,6 +223,7 @@ class GemProvider with ChangeNotifier {
       return false;
     }
   }
+
   Future<void> _loadFavorites() async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return;
@@ -244,6 +244,7 @@ class GemProvider with ChangeNotifier {
       debugPrint('Error loading favorites: $e');
     }
   }
+
   Future<void> toggleFavorite(String gemId) async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return;
