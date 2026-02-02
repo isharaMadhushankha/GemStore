@@ -19,4 +19,31 @@ class GemProvider with ChangeNotifier {
   List<Gem> get favoriteGems => _gems.where((g) => g.isFavorite).toList();
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+
+  Future<void> fetchGems({String? searchQuery, String? colorFilter}) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      var query = _supabase
+          .from(SupabaseConfig.gemsTable)
+          .select()
+          .eq('status', 'available')
+          .order('created_at', ascending: false);
+
+      if (searchQuery != null && searchQuery.isNotEmpty) {
+        query = query.or('title.ilike.%$searchQuery%,description.ilike.%$searchQuery%');
+      }
+
+      if (colorFilter != null && colorFilter.isNotEmpty) {
+        query = query.eq('color', colorFilter);
+      }
+
+      final response = await query;
+      _gems = (response as List).map((json) => Gem.fromJson(json)).toList();
+      
+      
+  }
+  
+
 }
