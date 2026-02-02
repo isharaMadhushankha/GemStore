@@ -150,6 +150,57 @@ class GemProvider with ChangeNotifier {
       return false;
     }
   }
+
+  Future<bool> updateGem({
+    required String gemId,
+    String? title,
+    String? description,
+    double? price,
+    String? color,
+    double? weight,
+    String? model,
+    String? location,
+    String? contactName,
+    String? contactPhone,
+    String? contactEmail,
+    String? status,
+  }) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final updateData = <String, dynamic>{};
+      if (title != null) updateData['title'] = title;
+      if (description != null) updateData['description'] = description;
+      if (price != null) updateData['price'] = price;
+      if (color != null) updateData['color'] = color;
+      if (weight != null) updateData['weight'] = weight;
+      if (model != null) updateData['model'] = model;
+      if (location != null) updateData['location'] = location;
+      if (contactName != null) updateData['contact_name'] = contactName;
+      if (contactPhone != null) updateData['contact_phone'] = contactPhone;
+      if (contactEmail != null) updateData['contact_email'] = contactEmail;
+      if (status != null) updateData['status'] = status;
+      updateData['updated_at'] = DateTime.now().toIso8601String();
+
+      await _supabase
+          .from(SupabaseConfig.gemsTable)
+          .update(updateData)
+          .eq('id', gemId);
+
+      await fetchMyGems();
+      await fetchGems();
+      
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
   
 
 }
