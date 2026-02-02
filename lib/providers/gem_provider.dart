@@ -76,6 +76,30 @@ class GemProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+  Future<List<String>> uploadImages(List<File> imageFiles) async {
+    List<String> uploadedUrls = [];
+
+    try {
+      for (var file in imageFiles) {
+        final fileName = '${DateTime.now().millisecondsSinceEpoch}_${file.path.split('/').last}';
+        final filePath = '${_supabase.auth.currentUser!.id}/$fileName';
+
+        await _supabase.storage
+            .from(SupabaseConfig.gemImagesBucket)
+            .upload(filePath, file);
+
+        final publicUrl = _supabase.storage
+            .from(SupabaseConfig.gemImagesBucket)
+            .getPublicUrl(filePath);
+
+        uploadedUrls.add(publicUrl);
+      }
+      return uploadedUrls;
+    } catch (e) {
+      debugPrint('Error uploading images: $e');
+      rethrow;
+    }
+  }
   
 
 }
