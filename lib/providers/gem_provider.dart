@@ -248,5 +248,32 @@ class GemProvider with ChangeNotifier {
     }
   }
   
+  Future<void> toggleFavorite(String gemId) async {
+    final userId = _supabase.auth.currentUser?.id;
+    if (userId == null) return;
+
+    try {
+      if (_favoriteGemIds.contains(gemId)) {
+        await _supabase
+            .from(SupabaseConfig.favoritesTable)
+            .delete()
+            .eq('user_id', userId)
+            .eq('gem_id', gemId);
+        _favoriteGemIds.remove(gemId);
+      } else {
+        await _supabase.from(SupabaseConfig.favoritesTable).insert({
+          'user_id': userId,
+          'gem_id': gemId,
+        });
+        _favoriteGemIds.add(gemId);
+      }
+      final gem = _gems.firstWhere((g) => g.id == gemId);
+      gem.isFavorite = _favoriteGemIds.contains(gemId);
+      notifyListeners();
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+    }
+  }
 
 }
