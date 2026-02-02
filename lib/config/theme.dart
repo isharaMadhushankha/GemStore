@@ -80,6 +80,17 @@ class AppTheme {
           fontWeight: FontWeight.w600,
         ),
       ),
+      appBarTheme: AppBarTheme(
+        elevation: 0,
+        centerTitle: true,
+        backgroundColor: backgroundColor,
+        foregroundColor: textPrimary,
+        titleTextStyle: GoogleFonts.poppins(
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: textPrimary,
+        ),
+      ),
   
 
 
