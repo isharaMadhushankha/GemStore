@@ -111,7 +111,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                             },
                           ),
                         );
-                      }).toList(),
+                      }),
                     ],
                   ),
                 ),
