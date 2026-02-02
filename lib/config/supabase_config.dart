@@ -6,6 +6,6 @@ class SupabaseConfig {
   static const String usersTable = 'users';
   static const String gemsTable = 'gems';
   static const String favoritesTable = 'favorites';
-
+  static const String gemImagesBucket = 'gem-images';
 
 }
