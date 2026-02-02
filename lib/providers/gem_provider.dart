@@ -225,6 +225,28 @@ class GemProvider with ChangeNotifier {
       return false;
     }
   }
+
+   Future<void> _loadFavorites() async {
+    final userId = _supabase.auth.currentUser?.id;
+    if (userId == null) return;
+
+    try {
+      final response = await _supabase
+          .from(SupabaseConfig.favoritesTable)
+          .select('gem_id')
+          .eq('user_id', userId);
+
+      _favoriteGemIds = (response as List)
+          .map((item) => item['gem_id'] as String)
+          .toList();
+
+      for (var gem in _gems) {
+        gem.isFavorite = _favoriteGemIds.contains(gem.id);
+      }
+    } catch (e) {
+      debugPrint('Error loading favorites: $e');
+    }
+  }
   
 
 }
