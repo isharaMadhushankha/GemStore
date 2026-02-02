@@ -276,4 +276,9 @@ class GemProvider with ChangeNotifier {
     }
   }
 
+  void clearError() {
+    _errorMessage = null;
+    notifyListeners();
+  }
+
 }
