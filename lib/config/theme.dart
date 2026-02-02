@@ -139,7 +139,17 @@ class AppTheme {
           color: textSecondary,
         ),
       ),
-  
-
-
+      chipTheme: ChipThemeData(
+        backgroundColor: primaryColor.withOpacity(0.1),
+        labelStyle: GoogleFonts.poppins(
+          color: primaryColor,
+          fontWeight: FontWeight.w500,
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
+    );
+  }
 }
