@@ -17,6 +17,20 @@ class AuthProvider with ChangeNotifier {
   AuthProvider() {
     _initAuth();
   }
+  Future<void> _loadUserProfile(String userId) async {
+    try {
+      final response = await _supabase
+          .from('users')
+          .select()
+          .eq('id', userId)
+          .single();
+      
+      _currentUser = AppUser.fromJson(response);
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error loading user profile: $e');
+    }
+  }
 
   Future<bool> signUp({
     required String email,
