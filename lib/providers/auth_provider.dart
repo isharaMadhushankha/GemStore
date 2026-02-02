@@ -17,6 +17,23 @@ class AuthProvider with ChangeNotifier {
   AuthProvider() {
     _initAuth();
   }
+
+   Future<void> _initAuth() async {
+    final session = _supabase.auth.currentSession;
+    if (session != null) {
+      await _loadUserProfile(session.user.id);
+    }
+    _supabase.auth.onAuthStateChange.listen((data) {
+      final session = data.session;
+      if (session != null) {
+        _loadUserProfile(session.user.id);
+      } else {
+        _currentUser = null;
+        notifyListeners();
+      }
+    });
+  }
+
   Future<void> _loadUserProfile(String userId) async {
     try {
       final response = await _supabase
