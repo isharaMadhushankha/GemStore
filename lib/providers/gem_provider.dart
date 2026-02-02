@@ -201,6 +201,30 @@ class GemProvider with ChangeNotifier {
       return false;
     }
   }
+
+  Future<bool> deleteGem(String gemId) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      await _supabase
+          .from(SupabaseConfig.gemsTable)
+          .delete()
+          .eq('id', gemId);
+
+      await fetchMyGems();
+      await fetchGems();
+      
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
   
 
 }
