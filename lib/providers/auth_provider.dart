@@ -3,7 +3,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/user.dart';
 
 class AuthProvider with ChangeNotifier {
-
   final SupabaseClient _supabase = Supabase.instance.client;
   AppUser? _currentUser;
   bool _isLoading = false;
@@ -18,11 +17,12 @@ class AuthProvider with ChangeNotifier {
     _initAuth();
   }
 
-   Future<void> _initAuth() async {
+  Future<void> _initAuth() async {
     final session = _supabase.auth.currentSession;
     if (session != null) {
       await _loadUserProfile(session.user.id);
     }
+    
     _supabase.auth.onAuthStateChange.listen((data) {
       final session = data.session;
       if (session != null) {
@@ -123,6 +123,7 @@ class AuthProvider with ChangeNotifier {
       return false;
     }
   }
+
   Future<void> signOut() async {
     try {
       await _supabase.auth.signOut();
