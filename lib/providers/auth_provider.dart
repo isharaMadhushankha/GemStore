@@ -79,4 +79,14 @@ class AuthProvider with ChangeNotifier {
       return false;
     }
   }
+  Future<void> signOut() async {
+    try {
+      await _supabase.auth.signOut();
+      _currentUser = null;
+      notifyListeners();
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+    }
+  }
 }
