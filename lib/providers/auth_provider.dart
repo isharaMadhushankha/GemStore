@@ -4,6 +4,20 @@ import '../models/user.dart';
 
 class AuthProvider with ChangeNotifier {
 
+  final SupabaseClient _supabase = Supabase.instance.client;
+  AppUser? _currentUser;
+  bool _isLoading = false;
+  String? _errorMessage;
+
+  AppUser? get currentUser => _currentUser;
+  bool get isLoading => _isLoading;
+  String? get errorMessage => _errorMessage;
+  bool get isAuthenticated => _currentUser != null;
+
+  AuthProvider() {
+    _initAuth();
+  }
+
   Future<bool> signUp({
     required String email,
     required String password,
@@ -22,7 +36,6 @@ class AuthProvider with ChangeNotifier {
       );
 
       if (response.user != null) {
-        // Create user profile
         await _supabase.from('users').insert({
           'id': response.user!.id,
           'email': email,
