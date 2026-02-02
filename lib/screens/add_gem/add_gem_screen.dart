@@ -252,7 +252,7 @@ class _AddGemScreenState extends State<AddGemScreen> {
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
-                value: _selectedColor,
+                initialValue: _selectedColor,
                 decoration: const InputDecoration(
                   labelText: 'Color',
                 ),
