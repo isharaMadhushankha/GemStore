@@ -42,7 +42,15 @@ class GemProvider with ChangeNotifier {
       final response = await query;
       _gems = (response as List).map((json) => Gem.fromJson(json)).toList();
       
+      await _loadFavorites();
       
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+    }
   }
   
 
