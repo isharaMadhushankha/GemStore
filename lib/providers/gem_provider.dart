@@ -4,7 +4,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/gem.dart';
 import '../config/supabase_config.dart';
 
-
 class GemProvider with ChangeNotifier {
   final SupabaseClient _supabase = Supabase.instance.client;
   
@@ -19,7 +18,6 @@ class GemProvider with ChangeNotifier {
   List<Gem> get favoriteGems => _gems.where((g) => g.isFavorite).toList();
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
-
   Future<void> fetchGems({String? searchQuery, String? colorFilter}) async {
     _isLoading = true;
     notifyListeners();
@@ -76,6 +74,7 @@ class GemProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+
   Future<List<String>> uploadImages(List<File> imageFiles) async {
     List<String> uploadedUrls = [];
 
@@ -225,8 +224,7 @@ class GemProvider with ChangeNotifier {
       return false;
     }
   }
-
-   Future<void> _loadFavorites() async {
+  Future<void> _loadFavorites() async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return;
 
@@ -239,7 +237,6 @@ class GemProvider with ChangeNotifier {
       _favoriteGemIds = (response as List)
           .map((item) => item['gem_id'] as String)
           .toList();
-
       for (var gem in _gems) {
         gem.isFavorite = _favoriteGemIds.contains(gem.id);
       }
@@ -247,7 +244,6 @@ class GemProvider with ChangeNotifier {
       debugPrint('Error loading favorites: $e');
     }
   }
-  
   Future<void> toggleFavorite(String gemId) async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return;
@@ -280,5 +276,4 @@ class GemProvider with ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
   }
-
 }
