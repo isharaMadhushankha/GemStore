@@ -105,3 +105,227 @@ class _EditGemScreenState extends State<EditGemScreen> {
       setState(() => _isLoading = false);
     }
   }
+
+  Widget _buildField({
+    required TextEditingController controller,
+    required String label,
+    required Widget leading,
+    TextInputType keyboardType = TextInputType.text,
+    String? hint,
+    TextAlign textAlign = TextAlign.start,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label.toUpperCase(),
+            style: const TextStyle(
+                fontSize: 10,
+                letterSpacing: 1.5,
+                color: Color(0xFF6b6b7e))),
+        const SizedBox(height: 6),
+        Container(
+          decoration: BoxDecoration(
+              color: const Color(0xFF13131f),
+              border: Border.all(color: const Color(0xFF2a2a3e)),
+              borderRadius: BorderRadius.circular(10)),
+          child: TextField(
+            controller: controller,
+            keyboardType: keyboardType,
+            textAlign: textAlign,
+            style:
+                const TextStyle(color: Color(0xFFd8d8e8), fontSize: 13),
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: const TextStyle(color: Color(0xFF3a3a52)),
+              prefixIcon: leading,
+              border: InputBorder.none,
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide:
+                    const BorderSide(color: Color(0xFFc9a84c)),
+              ),
+              contentPadding: const EdgeInsets.symmetric(vertical: 12),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF0a0a0f),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF0a0a0f),
+        elevation: 0,
+        leading: GestureDetector(
+          onTap: () => Navigator.pop(context),
+          child: Container(
+            margin: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFF13131f),
+                border: Border.all(color: const Color(0xFF2a2a3e))),
+            child: const Icon(Icons.arrow_back_ios_new,
+                size: 14, color: Color(0xFFc9a84c)),
+          ),
+        ),
+        title: const Text('Edit Listing',
+            style: TextStyle(
+                fontFamily: 'serif',
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFFf0d080))),
+      ),
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFFc9a84c)))
+          : SingleChildScrollView(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 22, vertical: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Image picker
+                  GestureDetector(
+                    onTap: _pickImage,
+                    child: Container(
+                      height: 150,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                          color: const Color(0xFF13131f),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                              color: _newImage != null
+                                  ? const Color(0xFFc9a84c)
+                                  : const Color(0xFF2a2a3e),
+                              width: 1.5)),
+                      clipBehavior: Clip.antiAlias,
+                      child: _newImage != null
+                          ? Stack(children: [
+                              Image.file(_newImage!,
+                                  fit: BoxFit.cover,
+                                  width: double.infinity,
+                                  height: double.infinity),
+                              Positioned(
+                                  top: 8,
+                                  right: 8,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(
+                                        color:
+                                            Colors.black.withOpacity(0.7),
+                                        border: Border.all(
+                                            color:
+                                                const Color(0xFF2a2a3e)),
+                                        borderRadius:
+                                            BorderRadius.circular(6)),
+                                    child: const Text('✓ New photo',
+                                        style: TextStyle(
+                                            fontSize: 9,
+                                            color: Color(0xFFc9a84c))),
+                                  )),
+                            ])
+                          : widget.gem['image_url'] != null
+                              ? Stack(children: [
+                                  Image.network(widget.gem['image_url'],
+                                      fit: BoxFit.cover,
+                                      width: double.infinity,
+                                      height: double.infinity),
+                                  Container(
+                                      color:
+                                          Colors.black.withOpacity(0.4)),
+                                  const Center(
+                                      child: Icon(
+                                          Icons.photo_camera_outlined,
+                                          color: Colors.white60,
+                                          size: 28)),
+                                ])
+                              : const Column(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.photo_camera_outlined,
+                                        size: 26,
+                                        color: Color(0xFF4a4a62)),
+                                    SizedBox(height: 8),
+                                    Text('Tap to change photo',
+                                        style: TextStyle(
+                                            fontSize: 11,
+                                            color: Color(0xFF5a5a72))),
+                                  ],
+                                ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  _buildField(
+                    controller: _nameController,
+                    label: 'Gem Name',
+                    hint: 'e.g. Blue Sapphire',
+                    leading: const Padding(
+                        padding: EdgeInsets.only(left: 14, right: 8),
+                        child: Text('💎',
+                            style: TextStyle(fontSize: 14))),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildField(
+                    controller: _priceController,
+                    label: 'Price (LKR)',
+                    hint: '0.00',
+                    keyboardType: TextInputType.number,
+                    textAlign: TextAlign.end,
+                    leading: const Padding(
+                        padding: EdgeInsets.only(left: 14, right: 4),
+                        child: Text('LKR',
+                            style: TextStyle(
+                                fontSize: 11,
+                                color: Color(0xFF6b6b7e)))),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildField(
+                    controller: _contactController,
+                    label: 'Contact Number',
+                    hint: '+94 7X XXX XXXX',
+                    keyboardType: TextInputType.phone,
+                    leading: const Padding(
+                        padding: EdgeInsets.only(left: 14, right: 8),
+                        child: Icon(Icons.phone_outlined,
+                            size: 15, color: Color(0xFF4a4a62))),
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _confirmAndUpdate,
+                      style: ElevatedButton.styleFrom(
+                          padding:
+                              const EdgeInsets.symmetric(vertical: 14),
+                          backgroundColor: const Color(0xFFc9a84c),
+                          foregroundColor: const Color(0xFF0a0a0f),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12))),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text('✦',
+                              style: TextStyle(fontSize: 13)),
+                          SizedBox(width: 8),
+                          Text('Update Listing',
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  letterSpacing: 0.5)),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                ],
+              ),
+            ),
+    );
+  }
+}
