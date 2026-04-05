@@ -272,3 +272,51 @@ class _GemDetailScreenState extends State<GemDetailScreen> {
     );
   }
 }
+
+class _Tag extends StatelessWidget {
+  final String label;
+  const _Tag(this.label);
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+            color: const Color(0xFF1e1e2e),
+            borderRadius: BorderRadius.circular(5)),
+        child: Text(label,
+            style: const TextStyle(fontSize: 10, color: Color(0xFF4a4a72))),
+      );
+}
+
+class _SectionLabel extends StatelessWidget {
+  final String text;
+  const _SectionLabel(this.text);
+  @override
+  Widget build(BuildContext context) => Row(children: [
+        Text(text.toUpperCase(),
+            style: const TextStyle(
+                fontSize: 9, letterSpacing: 2, color: Color(0xFF4a4a62))),
+        const SizedBox(width: 8),
+        const Expanded(child: Divider(color: Color(0xFF1e1e2e))),
+      ]);
+}
+
+class _InfoRow extends StatelessWidget {
+  final IconData icon;
+  final String text;
+  const _InfoRow({required this.icon, required this.text});
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+            color: const Color(0xFF13131f),
+            border: Border.all(color: const Color(0xFF2a2a3e)),
+            borderRadius: BorderRadius.circular(9)),
+        child: Row(children: [
+          Icon(icon, size: 14, color: const Color(0xFF6b6b7e)),
+          const SizedBox(width: 10),
+          Text(text,
+              style: const TextStyle(
+                  fontSize: 13, color: Color(0xFFd8d8e8))),
+        ]),
+      );
+}
