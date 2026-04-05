@@ -330,6 +330,8 @@ class _EditGemScreenState extends State<EditGemScreen> {
   }
 }
 
+// ─── Shared Dialog Widget ───────────────────────────────────────────────────
+
 class _GemDialog extends StatelessWidget {
   final String icon, title, subtitle, confirmLabel;
   final Color confirmColor, confirmTextColor;
