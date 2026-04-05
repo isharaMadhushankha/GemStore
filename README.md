@@ -1,293 +1,169 @@
-# GemStore - Fixed and Complete Version
+# GemStore
 
-## What Was Fixed
+A Flutter marketplace app for listing, browsing, and booking gems, powered by Supabase Authentication, Database, and Storage.
 
-### Major Issues Resolved:
-1. **Empty main.dart** - Completely rebuilt with proper Supabase initialization and Provider setup
-2. **Missing Navigation** - Implemented complete navigation system with 5 main screens
-3. **Empty Screens** - Created all 19 required screen files from scratch
-4. **No Data Loading** - Fixed all data fetching and state management
-5. **Missing Widgets** - Created gem card widget with favorites functionality
-6. **Authentication Flow** - Implemented complete auth flow (Welcome → Login/Register → Home)
+## Overview
 
-## Complete App Structure
+GemStore currently includes:
 
-### Authentication Screens
-- **WelcomeScreen** - Landing page with Get Started and Sign In buttons
-- **LoginScreen** - Email/password login with validation
-- **RegisterScreen** - Full registration form with optional fields
+- Email/password authentication (login + sign up)
+- Public gem marketplace feed with real-time updates
+- Add, edit, and delete your own gem listings
+- Gem detail view with booking request flow
+- Orders management (sent and received tabs)
+- Seller-side order confirmation/cancellation
 
-### Main App Screens (Bottom Navigation)
-1. **MarketplaceScreen** - Browse all available gems with search and filters
-2. **FavoritesScreen** - View favorited gems
-3. **AddGemScreen** - Add new gems with image upload
-4. **MyGemsScreen** - Manage your listed gems
-5. **ProfileScreen** - View/edit profile and sign out
+## Tech Stack
 
-### Additional Screens
-- **SplashScreen** - App initialization and auth check
-- **GemDetailScreen** - Detailed gem view with contact options
-- **HomeScreen** - Main container with bottom navigation
+- Flutter SDK: `^3.10.1`
+- Dart SDK: `^3.10.1`
+- Supabase Flutter: `^2.12.2`
+- Image Picker: `^1.2.1`
 
-## Features Implemented
+## Project Structure
 
-### 1. Authentication System
-- User registration with email/password
-- Secure login system
-- Profile management
-- Sign out functionality
-- Session persistence
-
-### 2. Gem Marketplace
-- Grid view of all available gems
-- Search functionality
-- Color filtering
-- Real-time data updates
-- Pull to refresh
-
-### 3. Gem Management
-- Add new gems with multiple images
-- Upload images to Supabase Storage
-- Edit gem information
-- Delete gems
-- Status management
-
-### 4. Favorites System
-- Add/remove gems from favorites
-- Persistent favorite state
-- Quick access to favorited items
-
-### 5. Profile Management
-- View user information
-- Edit profile details
-- View gem statistics
-- Sign out
-
-## Setup Instructions
-
-### 1. Install Dependencies
-```bash
-flutter pub get
-```
-
-### 2. Supabase Configuration
-The app is already configured with your Supabase credentials:
-- URL: https://gchpjquidgxalpzikvcp.supabase.co
-- Tables: users, gems, favorites
-- Storage: gem-images bucket
-
-### 3. Run the App
-```bash
-flutter run
-```
-
-## Database Schema
-
-### Users Table
-```sql
-CREATE TABLE users (
-  id UUID PRIMARY KEY,
-  email TEXT NOT NULL UNIQUE,
-  full_name TEXT,
-  phone TEXT,
-  location TEXT,
-  created_at TIMESTAMP DEFAULT NOW()
-);
-```
-
-### Gems Table
-```sql
-CREATE TABLE gems (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID REFERENCES users(id),
-  title TEXT NOT NULL,
-  description TEXT,
-  price NUMERIC NOT NULL,
-  color TEXT,
-  weight NUMERIC,
-  model TEXT,
-  location TEXT,
-  contact_name TEXT,
-  contact_phone TEXT,
-  contact_email TEXT,
-  images TEXT[],
-  status TEXT DEFAULT 'available',
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
-);
-```
-
-### Favorites Table
-```sql
-CREATE TABLE favorites (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID REFERENCES users(id),
-  gem_id UUID REFERENCES gems(id),
-  created_at TIMESTAMP DEFAULT NOW(),
-  UNIQUE(user_id, gem_id)
-);
-```
-
-## Key Technologies Used
-
-- **Flutter SDK**: ^3.10.1
-- **Supabase**: Backend and authentication
-- **Provider**: State management
-- **Google Fonts**: Typography
-- **Cached Network Image**: Image loading and caching
-- **Image Picker**: Image selection
-- **URL Launcher**: Contact functionality
-
-## File Structure
-
-```
+```text
 lib/
-├── config/
-│   ├── supabase_config.dart
-│   └── theme.dart
-├── models/
-│   ├── gem.dart
-│   └── user.dart
-├── providers/
-│   ├── auth_provider.dart
-│   └── gem_provider.dart
-├── screens/
-│   ├── auth/
-│   │   ├── welcome_screen.dart
-│   │   ├── login_screen.dart
-│   │   └── register_screen.dart
-│   ├── marketplace/
-│   │   └── marketplace_screen.dart
-│   ├── add_gem/
-│   │   └── add_gem_screen.dart
-│   ├── my_gems/
-│   │   └── my_gems_screen.dart
-│   ├── favorites/
-│   │   └── favorites_screen.dart
-│   ├── profile/
-│   │   └── profile_screen.dart
-│   ├── splash_screen.dart
-│   ├── home_screen.dart
-│   └── gem_detail_screen.dart
-├── widgets/
-│   └── gem_card.dart
-└── main.dart
+  main.dart
+  auth_screen.dart
+  home_screen.dart
+  add_gem_screen.dart
+  edit_gem_screen.dart
+  gem_detail_screen.dart
+  orders_screen.dart
+  utils/
+    snackbar_utils.dart
+  widgets/
+    gem_dialog.dart
 ```
 
 ## App Flow
 
-1. **App Launch** → Splash Screen (2 seconds)
-2. **Check Authentication**:
-   - If logged in → Home Screen
-   - If not logged in → Welcome Screen
-3. **Welcome Screen** → Login or Register
-4. **After Login** → Home Screen with 5 tabs:
-   - Marketplace (default)
-   - Favorites
-   - Add Gem
-   - My Gems
-   - Profile
+1. App starts and initializes Supabase (`main.dart`).
+2. Session is checked:
+   - If session exists -> Home screen
+   - If no session -> Auth screen
+3. Home screen shows live gem listings from `gems` table.
+4. Users can:
+   - Add a gem listing
+   - Edit/delete own listings
+   - Open gem details and place booking requests
+5. Orders screen supports:
+   - Sent requests (buyer view)
+   - Received requests (seller view)
+   - Confirm/cancel actions for sellers
 
-## Features in Detail
+## Features
 
-### Marketplace
-- Grid layout with 2 columns
-- Search bar at top
-- Color filter chips
-- Each gem card shows:
-  - Image (with placeholder if none)
-  - Title
-  - Price
-  - Weight (if available)
-  - Favorite button
-  - Color badge
+### Authentication
 
-### Add Gem
-- Image picker (multiple images)
-- Required fields: Title, Price, Images
-- Optional fields: Description, Color, Weight, Model, Location
-- Contact info: Name, Phone, Email
-- Validates all inputs
-- Uploads images to Supabase Storage
-- Shows loading state during upload
+- Single auth screen with tabs for Login and Register
+- Supabase email/password sign-in and sign-up
+- Logout from home screen
 
-### Profile
-- View mode and edit mode
-- Statistics (My Gems count, Favorites count)
-- Edit profile information
-- Sign out with confirmation dialog
+### Gem Listings
 
-## Error Handling
+- Real-time list using Supabase stream
+- Listing card includes image, name, price, and contact
+- Owner controls: edit and delete
 
-- Network error messages
-- Form validation
-- Image upload errors
-- Authentication errors
-- Data loading states
-- Empty states with helpful messages
+### Add/Edit Gem
 
-## Styling
+- Pick image from gallery
+- Upload image to Supabase Storage bucket: `images`
+- Save or update listing in `gems`
 
-- Custom color scheme with purple/pink gradient
-- Google Fonts (Poppins)
-- Material Design 3
-- Consistent spacing and borders
-- Responsive layouts
-- Loading indicators
-- Smooth transitions
+### Gem Detail + Booking
 
-## Testing Checklist
+- Detailed gem view with seller contact
+- Optional booking message
+- Booking request saved to `orders`
 
-- [ ] User registration
-- [ ] User login
-- [ ] Browse marketplace
-- [ ] Search gems
-- [ ] Filter by color
-- [ ] View gem details
-- [ ] Add to favorites
-- [ ] Remove from favorites
-- [ ] Add new gem
-- [ ] Upload images
-- [ ] View my gems
-- [ ] Edit profile
-- [ ] Sign out
+### Orders
 
-## Troubleshooting
+- Two tabs:
+  - `Sent`: buyer orders
+  - `Received`: seller orders
+- Seller can confirm or cancel pending orders
+- Status banners/snackbars for order updates
 
-### Images not loading
-- Check internet connection
-- Verify Supabase Storage bucket exists
-- Check bucket permissions
+## Supabase Setup
 
-### Can't login
-- Verify Supabase credentials
-- Check email format
-- Ensure password is 6+ characters
+Supabase is initialized in `main.dart` using hardcoded URL and anon key.
 
-### Data not appearing
-- Pull to refresh on screens
-- Check Supabase tables exist
-- Verify Row Level Security policies
+Before running in production, you should move these values to a secure configuration strategy.
 
-## Future Enhancements
+### Required Supabase resources
 
-- Edit gem functionality
-- Delete gem confirmation
-- Image zoom/gallery view
-- Push notifications
-- In-app messaging
-- Payment integration
-- Reviews and ratings
-- Advanced search filters
-- Map view for gem locations
-- Dark mode support
+1. Auth enabled for email/password
+2. Storage bucket:
+   - `images` (public or properly policy-protected)
+3. Database tables:
+   - `gems`
+   - `orders`
 
-## Support
+## Suggested Database Schema
 
-For issues or questions about the app structure, refer to the code comments or check the Flutter documentation at https://flutter.dev
+Use this as a baseline schema compatible with current code.
+
+```sql
+create extension if not exists "pgcrypto";
+
+create table if not exists public.gems (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null,
+  gem_name text not null,
+  price numeric not null default 0,
+  contact_no text,
+  image_url text,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.orders (
+  id uuid primary key default gen_random_uuid(),
+  gem_id uuid not null,
+  buyer_id uuid not null,
+  seller_id uuid not null,
+  gem_name text,
+  price numeric,
+  contact_no text,
+  image_url text,
+  message text,
+  status text not null default 'pending',
+  created_at timestamptz not null default now()
+);
+```
+
+## Getting Started
+
+### 1. Install dependencies
+
+```bash
+flutter pub get
+```
+
+### 2. Run the app
+
+```bash
+flutter run
+```
+
+## Notes and Limitations
+
+- Search field is currently UI-only (no filtering logic yet).
+- There is no dedicated profile/favorites module in the current codebase.
+- `orders` status handling expects values like `pending`, `confirmed`, and `cancelled`.
+
+## Recommended Next Improvements
+
+1. Move Supabase credentials to environment-based config.
+2. Add Row Level Security (RLS) policies for `gems`, `orders`, and storage.
+3. Implement real search/filter logic in home feed.
+4. Add form validation and stronger input sanitization.
+5. Add automated tests for auth, listing CRUD, and order workflow.
 
 ---
 
-**Version**: 1.0.0
-**Last Updated**: February 2, 2026
-**Status**: Fully Functional ✅
+Version: `1.0.1`
+Last updated: `2026-04-05`
+Status: Active

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gemstore/utils/snackbar_utils.dart';
 import 'package:image_picker/image_picker.dart';
@@ -74,12 +75,7 @@ class _EditGemScreenState extends State<EditGemScreen> {
 
       if (_newImage != null) {
         final fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
-        final bytes = await _newImage!.readAsBytes();
-        await supabase.storage.from('images').uploadBinary(
-              fileName, bytes,
-              fileOptions:
-                  const FileOptions(contentType: 'image/jpeg'),
-            );
+        await supabase.storage.from('images').upload(fileName, _newImage!);
         imageUrl =
             supabase.storage.from('images').getPublicUrl(fileName);
       }
@@ -202,7 +198,7 @@ class _EditGemScreenState extends State<EditGemScreen> {
                                   : const Color(0xFF2a2a3e),
                               width: 1.5)),
                       clipBehavior: Clip.antiAlias,
-                      child: _newImage != null
+                      child: _newImage != null && !kIsWeb
                           ? Stack(children: [
                               Image.file(_newImage!,
                                   fit: BoxFit.cover,
