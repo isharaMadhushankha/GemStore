@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -36,11 +37,7 @@ class _AddGemScreenState extends State<AddGemScreen> {
     setState(() => _isLoading = true);
     try {
       final fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
-      final bytes = await _selectedImage!.readAsBytes();
-      await supabase.storage.from('images').uploadBinary(
-            fileName, bytes,
-            fileOptions: const FileOptions(contentType: 'image/jpeg'),
-          );
+      await supabase.storage.from('images').upload(fileName, _selectedImage!);
       final imageUrl =
           supabase.storage.from('images').getPublicUrl(fileName);
       await supabase.from('gems').insert({
@@ -199,30 +196,55 @@ class _AddGemScreenState extends State<AddGemScreen> {
                                         color: Color(0xFF3a3a52))),
                               ],
                             )
-                          : Stack(children: [
-                              Image.file(_selectedImage!,
-                                  fit: BoxFit.cover,
-                                  width: double.infinity,
-                                  height: double.infinity),
-                              Positioned(
-                                top: 8, right: 8,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 3),
-                                  decoration: BoxDecoration(
-                                    color:
-                                        Colors.black.withOpacity(0.7),
-                                    border: Border.all(
-                                        color: const Color(0xFF2a2a3e)),
-                                    borderRadius: BorderRadius.circular(6),
+                          : !kIsWeb && _selectedImage != null
+                              ? Stack(children: [
+                                  Image.file(_selectedImage!,
+                                      fit: BoxFit.cover,
+                                      width: double.infinity,
+                                      height: double.infinity),
+                                  Positioned(
+                                    top: 8, right: 8,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        color:
+                                            Colors.black.withOpacity(0.7),
+                                        border: Border.all(
+                                            color: const Color(0xFF2a2a3e)),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: const Text('✓ Selected',
+                                          style: TextStyle(
+                                              fontSize: 10,
+                                              color: Color(0xFFc9a84c))),
+                                    ),
                                   ),
-                                  child: const Text('✓ Selected',
-                                      style: TextStyle(
-                                          fontSize: 10,
-                                          color: Color(0xFFc9a84c))),
+                                ])
+                              : Container(
+                                  alignment: Alignment.center,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Container(
+                                        width: 46,
+                                        height: 46,
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF1e1e2e),
+                                          borderRadius: BorderRadius.circular(23),
+                                        ),
+                                        child: const Icon(Icons.check,
+                                            size: 22, color: Color(0xFFc9a84c)),
+                                      ),
+                                      const SizedBox(height: 10),
+                                      const Text('✓ Image selected',
+                                          style: TextStyle(
+                                              fontFamily: 'sans-serif',
+                                              fontSize: 12,
+                                              color: Color(0xFF5a5a72))),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ]),
                     ),
                   ),
 
